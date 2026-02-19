@@ -67,6 +67,4 @@ class User(Base, UUIDMixin, TimestampMixin, SoftDeleteMixin):
     transactions: Mapped[list[CoinTransaction]] = relationship(
         "CoinTransaction", back_populates="user"
     )
-    refresh_tokens: Mapped[list[RefreshToken]] = relationship(
-        "RefreshToken", back_populates="user"
-    )
+    refresh_tokens: Mapped[list[RefreshToken]] = relationship("RefreshToken", back_populates="user")

@@ -134,9 +134,7 @@ async def test_register_initiate_duplicate_email(
 
 
 async def test_register_initiate_empty_couple_name(client: AsyncClient) -> None:
-    resp = await client.post(
-        BASE + "/register/initiate", json=_initiate_payload(couple_name="   ")
-    )
+    resp = await client.post(BASE + "/register/initiate", json=_initiate_payload(couple_name="   "))
     assert resp.status_code == 422
 
 
@@ -145,9 +143,7 @@ async def test_register_initiate_empty_couple_name(client: AsyncClient) -> None:
 # ===========================================================================
 
 
-async def test_register_verify_success(
-    client: AsyncClient, mock_email: MockEmailProvider
-) -> None:
+async def test_register_verify_success(client: AsyncClient, mock_email: MockEmailProvider) -> None:
     # Initiate first
     resp = await client.post(BASE + "/register/initiate", json=_initiate_payload())
     assert resp.status_code == 201
@@ -170,9 +166,7 @@ async def test_register_verify_success(
 
 
 async def test_register_verify_invalid_token(client: AsyncClient) -> None:
-    resp = await client.post(
-        BASE + "/register/verify", json={"token": "totally_invalid_token"}
-    )
+    resp = await client.post(BASE + "/register/verify", json={"token": "totally_invalid_token"})
     assert resp.status_code == 404
 
 
@@ -191,9 +185,7 @@ async def test_register_verify_already_verified(
     assert resp.status_code == 404  # token was cleared
 
 
-async def test_register_verify_expired_token(
-    client: AsyncClient, db_session: AsyncSession
-) -> None:
+async def test_register_verify_expired_token(client: AsyncClient, db_session: AsyncSession) -> None:
     couple = Couple(couple_name="Exp Couple", status=CoupleStatus.PENDING)
     db_session.add(couple)
     await db_session.flush()
@@ -220,18 +212,14 @@ async def test_register_verify_expired_token(
 # ===========================================================================
 
 
-async def _full_register(
-    client: AsyncClient, mock_email: MockEmailProvider
-) -> dict[str, Any]:
+async def _full_register(client: AsyncClient, mock_email: MockEmailProvider) -> dict[str, Any]:
     """Run the full initiate → verify → complete flow, return complete response."""
     init_resp = await client.post(BASE + "/register/initiate", json=_initiate_payload())
     assert init_resp.status_code == 201
     couple_id = init_resp.json()["couple_id"]
 
     for email_record in mock_email.sent_verification:
-        resp = await client.post(
-            BASE + "/register/verify", json={"token": email_record["code"]}
-        )
+        resp = await client.post(BASE + "/register/verify", json={"token": email_record["code"]})
         assert resp.status_code == 200
 
     complete_resp = await client.post(
@@ -348,9 +336,7 @@ async def test_login_success(client: AsyncClient, db_session: AsyncSession) -> N
     assert body["token_type"] == "bearer"
 
 
-async def test_login_wrong_password(
-    client: AsyncClient, db_session: AsyncSession
-) -> None:
+async def test_login_wrong_password(client: AsyncClient, db_session: AsyncSession) -> None:
     await _create_active_couple(db_session)
     resp = await client.post(
         BASE + "/login", json={"email": "alice@example.com", "password": "wrong_pass"}
@@ -367,9 +353,7 @@ async def test_login_unknown_email(client: AsyncClient) -> None:
     assert resp.json()["detail"] == "Invalid email or password"
 
 
-async def test_login_email_not_verified(
-    client: AsyncClient, db_session: AsyncSession
-) -> None:
+async def test_login_email_not_verified(client: AsyncClient, db_session: AsyncSession) -> None:
     couple = Couple(couple_name="Unverified", status=CoupleStatus.PENDING)
     db_session.add(couple)
     await db_session.flush()
@@ -392,9 +376,7 @@ async def test_login_email_not_verified(
     assert "verif" in resp.json()["detail"].lower()
 
 
-async def test_login_couple_not_active(
-    client: AsyncClient, db_session: AsyncSession
-) -> None:
+async def test_login_couple_not_active(client: AsyncClient, db_session: AsyncSession) -> None:
     couple = Couple(couple_name="Pending Couple", status=CoupleStatus.PENDING)
     db_session.add(couple)
     await db_session.flush()
@@ -421,9 +403,7 @@ async def test_login_couple_not_active(
 # ===========================================================================
 
 
-async def test_token_refresh_success(
-    client: AsyncClient, db_session: AsyncSession
-) -> None:
+async def test_token_refresh_success(client: AsyncClient, db_session: AsyncSession) -> None:
     await _create_active_couple(db_session)
     login_resp = await client.post(
         BASE + "/login", json={"email": "alice@example.com", "password": "securepass1"}
@@ -431,9 +411,7 @@ async def test_token_refresh_success(
     assert login_resp.status_code == 200
     refresh_token = login_resp.json()["refresh_token"]
 
-    resp = await client.post(
-        BASE + "/token/refresh", json={"refresh_token": refresh_token}
-    )
+    resp = await client.post(BASE + "/token/refresh", json={"refresh_token": refresh_token})
     assert resp.status_code == 200
     body = resp.json()
     assert "access_token" in body
@@ -447,9 +425,7 @@ async def test_token_refresh_invalid_token(client: AsyncClient) -> None:
     assert resp.status_code == 401
 
 
-async def test_token_refresh_rotation(
-    client: AsyncClient, db_session: AsyncSession
-) -> None:
+async def test_token_refresh_rotation(client: AsyncClient, db_session: AsyncSession) -> None:
     """After refreshing, the old refresh token must be revoked."""
     await _create_active_couple(db_session)
     login_resp = await client.post(
@@ -458,21 +434,15 @@ async def test_token_refresh_rotation(
     old_refresh = login_resp.json()["refresh_token"]
 
     # Use the token once
-    resp = await client.post(
-        BASE + "/token/refresh", json={"refresh_token": old_refresh}
-    )
+    resp = await client.post(BASE + "/token/refresh", json={"refresh_token": old_refresh})
     assert resp.status_code == 200
 
     # Re-use the old token — must be rejected
-    resp2 = await client.post(
-        BASE + "/token/refresh", json={"refresh_token": old_refresh}
-    )
+    resp2 = await client.post(BASE + "/token/refresh", json={"refresh_token": old_refresh})
     assert resp2.status_code == 401
 
 
-async def test_token_refresh_expired(
-    client: AsyncClient, db_session: AsyncSession
-) -> None:
+async def test_token_refresh_expired(client: AsyncClient, db_session: AsyncSession) -> None:
     """An expired refresh token must return 401."""
     _, user_a, _ = await _create_active_couple(db_session)
 
@@ -486,9 +456,7 @@ async def test_token_refresh_expired(
     db_session.add(expired_record)
     await db_session.commit()
 
-    resp = await client.post(
-        BASE + "/token/refresh", json={"refresh_token": raw_token}
-    )
+    resp = await client.post(BASE + "/token/refresh", json={"refresh_token": raw_token})
     assert resp.status_code == 401
     assert "expired" in resp.json()["detail"].lower()
 
@@ -502,9 +470,7 @@ async def test_password_reset_request_success(
     client: AsyncClient, db_session: AsyncSession, mock_email: MockEmailProvider
 ) -> None:
     await _create_active_couple(db_session)
-    resp = await client.post(
-        BASE + "/password/reset", json={"email": "alice@example.com"}
-    )
+    resp = await client.post(BASE + "/password/reset", json={"email": "alice@example.com"})
     assert resp.status_code == 204
     assert len(mock_email.sent_reset) == 1
     assert mock_email.sent_reset[0]["to"] == "alice@example.com"
@@ -514,9 +480,7 @@ async def test_password_reset_request_unknown_email(
     client: AsyncClient, mock_email: MockEmailProvider
 ) -> None:
     # Must return 204 even for unknown emails (no enumeration)
-    resp = await client.post(
-        BASE + "/password/reset", json={"email": "nobody@example.com"}
-    )
+    resp = await client.post(BASE + "/password/reset", json={"email": "nobody@example.com"})
     assert resp.status_code == 204
     assert len(mock_email.sent_reset) == 0
 
@@ -620,9 +584,7 @@ async def test_apple_login_existing_user_by_apple_sub(
         new_callable=AsyncMock,
         return_value={"sub": "apple_sub_abc123", "email": "alice@example.com"},
     ):
-        resp = await client.post(
-            BASE + "/apple/login", json={"identity_token": "fake_token"}
-        )
+        resp = await client.post(BASE + "/apple/login", json={"identity_token": "fake_token"})
 
     assert resp.status_code == 200
     assert "access_token" in resp.json()
@@ -639,9 +601,7 @@ async def test_apple_login_existing_user_by_email(
         new_callable=AsyncMock,
         return_value={"sub": "new_apple_sub_xyz", "email": "alice@example.com"},
     ):
-        resp = await client.post(
-            BASE + "/apple/login", json={"identity_token": "fake_token"}
-        )
+        resp = await client.post(BASE + "/apple/login", json={"identity_token": "fake_token"})
 
     assert resp.status_code == 200
     assert "access_token" in resp.json()
@@ -653,9 +613,7 @@ async def test_apple_login_user_not_found(client: AsyncClient) -> None:
         new_callable=AsyncMock,
         return_value={"sub": "unknown_sub", "email": "nobody@example.com"},
     ):
-        resp = await client.post(
-            BASE + "/apple/login", json={"identity_token": "fake_token"}
-        )
+        resp = await client.post(BASE + "/apple/login", json={"identity_token": "fake_token"})
 
     assert resp.status_code == 404
     assert "register" in resp.json()["detail"].lower()
@@ -667,9 +625,7 @@ async def test_apple_login_invalid_token(client: AsyncClient) -> None:
         new_callable=AsyncMock,
         side_effect=ValueError("bad signature"),
     ):
-        resp = await client.post(
-            BASE + "/apple/login", json={"identity_token": "bad_token"}
-        )
+        resp = await client.post(BASE + "/apple/login", json={"identity_token": "bad_token"})
 
     assert resp.status_code == 401
     assert "Apple" in resp.json()["detail"]

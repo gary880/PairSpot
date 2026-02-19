@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Seed script for development data."""
+
 from __future__ import annotations
 
 import asyncio
@@ -22,9 +23,9 @@ async def seed_data() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async_session_local = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
-    async with AsyncSessionLocal() as session:
+    async with async_session_local() as session:
         # Create sample couple
         couple = Couple(
             id=uuid.uuid4(),

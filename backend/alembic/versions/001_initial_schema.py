@@ -5,11 +5,14 @@ Revises:
 Create Date: 2025-02-19
 
 """
-from typing import Sequence, Union
+
+from collections.abc import Sequence
+from typing import Union
 
 import sqlalchemy as sa
-from alembic import op
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 revision: str = "001"
 down_revision: Union[str, None] = None
@@ -31,7 +34,9 @@ def upgrade() -> None:
             nullable=False,
             server_default="pending",
         ),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
     )
@@ -41,7 +46,9 @@ def upgrade() -> None:
     op.create_table(
         "users",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("couple_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("couples.id"), nullable=False),
+        sa.Column(
+            "couple_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("couples.id"), nullable=False
+        ),
         sa.Column("email", sa.String(255), nullable=False, unique=True),
         sa.Column("password_hash", sa.String(255), nullable=True),
         sa.Column("display_name", sa.String(100), nullable=False),
@@ -52,7 +59,9 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("verification_token", sa.String(255), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
     )
@@ -64,8 +73,12 @@ def upgrade() -> None:
     op.create_table(
         "posts",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("couple_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("couples.id"), nullable=False),
-        sa.Column("author_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False),
+        sa.Column(
+            "couple_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("couples.id"), nullable=False
+        ),
+        sa.Column(
+            "author_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False
+        ),
         sa.Column("content", sa.Text(), nullable=True),
         sa.Column(
             "visibility",
@@ -76,11 +89,15 @@ def upgrade() -> None:
         sa.Column("is_promoted", sa.Boolean(), nullable=False, server_default="false"),
         sa.Column("promoted_until", sa.DateTime(timezone=True), nullable=True),
         sa.Column("like_count", sa.Integer(), nullable=False, server_default="0"),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
     )
-    op.create_index("idx_posts_feed", "posts", ["created_at"], postgresql_where=sa.text("deleted_at IS NULL"))
+    op.create_index(
+        "idx_posts_feed", "posts", ["created_at"], postgresql_where=sa.text("deleted_at IS NULL")
+    )
     op.create_index(
         "idx_posts_promoted",
         "posts",
@@ -109,7 +126,9 @@ def upgrade() -> None:
         sa.Column("sort_order", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("width", sa.Integer(), nullable=True),
         sa.Column("height", sa.Integer(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
     )
     op.create_index("idx_post_images_post", "post_images", ["post_id"])
@@ -124,8 +143,12 @@ def upgrade() -> None:
             sa.ForeignKey("posts.id", ondelete="CASCADE"),
             nullable=False,
         ),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False
+        ),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
     )
     op.create_index("idx_likes_post", "likes", ["post_id"])
@@ -135,8 +158,12 @@ def upgrade() -> None:
     op.create_table(
         "reports",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("reporter_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False),
-        sa.Column("post_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("posts.id"), nullable=False),
+        sa.Column(
+            "reporter_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False
+        ),
+        sa.Column(
+            "post_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("posts.id"), nullable=False
+        ),
         sa.Column(
             "reason",
             sa.Enum("spam", "inappropriate", "harassment", "other", name="reportreason"),
@@ -149,7 +176,9 @@ def upgrade() -> None:
             nullable=False,
             server_default="pending",
         ),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
     )
     op.create_index("idx_reports_post", "reports", ["post_id"])
@@ -157,16 +186,22 @@ def upgrade() -> None:
     # User wallets table
     op.create_table(
         "user_wallets",
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), primary_key=True),
+        sa.Column(
+            "user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), primary_key=True
+        ),
         sa.Column("balance", sa.Integer(), nullable=False, server_default="0"),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
     )
 
     # Coin transactions table
     op.create_table(
         "coin_transactions",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False),
+        sa.Column(
+            "user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False
+        ),
         sa.Column(
             "type",
             sa.Enum("purchase", "spend", "refund", name="transactiontype"),
@@ -176,7 +211,9 @@ def upgrade() -> None:
         sa.Column("balance_after", sa.Integer(), nullable=False),
         sa.Column("apple_txn_id", sa.String(255), nullable=True, unique=True),
         sa.Column("reference_id", postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
     )
     op.create_index("idx_coin_transactions_user", "coin_transactions", ["user_id"])
 

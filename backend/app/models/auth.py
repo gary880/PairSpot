@@ -26,9 +26,7 @@ class RefreshToken(Base, UUIDMixin, TimestampMixin):
         index=True,
     )
     # SHA-256 hash of the raw token sent to the client
-    token_hash: Mapped[str] = mapped_column(
-        String(64), nullable=False, unique=True, index=True
-    )
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True, index=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     revoked_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True, default=None

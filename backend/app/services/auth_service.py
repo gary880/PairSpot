@@ -53,9 +53,7 @@ class AuthService:
     # Registration flow
     # ------------------------------------------------------------------
 
-    async def register_initiate(
-        self, data: RegisterInitiateRequest
-    ) -> RegisterInitiateResponse:
+    async def register_initiate(self, data: RegisterInitiateRequest) -> RegisterInitiateResponse:
         """Step 1: Create couple + two unverified users, send verification emails."""
         email_a = str(data.email_a)
         email_b = str(data.email_b)
@@ -88,9 +86,7 @@ class AuthService:
 
         token_a = secrets.token_urlsafe(32)
         token_b = secrets.token_urlsafe(32)
-        expires_at = datetime.now(timezone.utc) + timedelta(
-            hours=_VERIFICATION_TOKEN_TTL_HOURS
-        )
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=_VERIFICATION_TOKEN_TTL_HOURS)
 
         user_a = User(
             couple_id=couple.id,
@@ -180,9 +176,7 @@ class AuthService:
             both_verified=both_verified,
         )
 
-    async def register_complete(
-        self, data: RegisterCompleteRequest
-    ) -> RegisterCompleteResponse:
+    async def register_complete(self, data: RegisterCompleteRequest) -> RegisterCompleteResponse:
         """Step 3: Set passwords + display names, activate couple."""
         try:
             couple_uuid = uuid.UUID(data.couple_id)
@@ -329,9 +323,7 @@ class AuthService:
     async def apple_login(self, data: AppleLoginRequest) -> LoginResponse:
         """Verify Apple ID token; find or link the matching User."""
         try:
-            payload = await verify_apple_id_token(
-                data.identity_token, settings.APPLE_APP_BUNDLE_ID
-            )
+            payload = await verify_apple_id_token(data.identity_token, settings.APPLE_APP_BUNDLE_ID)
         except ValueError as exc:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -356,9 +348,7 @@ class AuthService:
         # 2. Fallback: find by email, then link the sub
         if user is None and apple_email:
             result = await self.db.execute(
-                select(User).where(
-                    User.email == apple_email, User.deleted_at.is_(None)
-                )
+                select(User).where(User.email == apple_email, User.deleted_at.is_(None))
             )
             user = result.scalar_one_or_none()
             if user is not None:
@@ -411,9 +401,8 @@ class AuthService:
                 detail="Invalid password reset token",
             )
 
-        if (
-            user.password_reset_expires_at is None
-            or user.password_reset_expires_at < datetime.now(timezone.utc)
+        if user.password_reset_expires_at is None or user.password_reset_expires_at < datetime.now(
+            timezone.utc
         ):
             raise HTTPException(
                 status_code=status.HTTP_410_GONE,
@@ -430,9 +419,7 @@ class AuthService:
     # ------------------------------------------------------------------
 
     async def _assert_couple_active(self, couple_id: uuid.UUID) -> None:
-        result = await self.db.execute(
-            select(Couple).where(Couple.id == couple_id)
-        )
+        result = await self.db.execute(select(Couple).where(Couple.id == couple_id))
         couple = result.scalar_one_or_none()
         if couple is None or couple.status != CoupleStatus.ACTIVE:
             raise HTTPException(

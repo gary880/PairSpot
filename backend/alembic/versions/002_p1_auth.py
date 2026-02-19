@@ -67,9 +67,7 @@ def upgrade() -> None:
         ),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
     )
-    op.create_index(
-        "idx_refresh_tokens_token_hash", "refresh_tokens", ["token_hash"], unique=True
-    )
+    op.create_index("idx_refresh_tokens_token_hash", "refresh_tokens", ["token_hash"], unique=True)
     op.create_index("idx_refresh_tokens_user_id", "refresh_tokens", ["user_id"])
 
 
