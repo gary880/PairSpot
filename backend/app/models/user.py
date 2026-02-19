@@ -43,5 +43,9 @@ class User(Base, UUIDMixin, TimestampMixin, SoftDeleteMixin):
     couple: Mapped[Couple] = relationship("Couple", back_populates="users")
     posts: Mapped[list[Post]] = relationship("Post", back_populates="author")
     likes: Mapped[list[Like]] = relationship("Like", back_populates="user")
-    wallet: Mapped[UserWallet | None] = relationship("UserWallet", back_populates="user", uselist=False)
-    transactions: Mapped[list[CoinTransaction]] = relationship("CoinTransaction", back_populates="user")
+    wallet: Mapped[UserWallet | None] = relationship(
+        "UserWallet", back_populates="user", uselist=False
+    )
+    transactions: Mapped[list[CoinTransaction]] = relationship(
+        "CoinTransaction", back_populates="user"
+    )

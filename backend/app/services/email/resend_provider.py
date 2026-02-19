@@ -17,11 +17,12 @@ class ResendProvider(EmailProvider):
     async def send_verification(self, to: str, code: str, couple_name: str) -> bool:
         """Send verification email via Resend."""
         try:
-            resend.Emails.send({
-                "from": settings.EMAIL_FROM,
-                "to": to,
-                "subject": f"歡迎加入 {settings.APP_NAME}！請驗證您的 Email",
-                "html": f"""
+            resend.Emails.send(
+                {
+                    "from": settings.EMAIL_FROM,
+                    "to": to,
+                    "subject": f"歡迎加入 {settings.APP_NAME}！請驗證您的 Email",
+                    "html": f"""
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
                     <h1>歡迎加入 {settings.APP_NAME}！</h1>
                     <p>您的伴侶 <strong>{couple_name}</strong> 邀請您一起加入。</p>
@@ -36,7 +37,8 @@ class ResendProvider(EmailProvider):
                     </p>
                 </div>
                 """,
-            })
+                }
+            )
             return True
         except Exception:
             return False
@@ -44,11 +46,12 @@ class ResendProvider(EmailProvider):
     async def send_password_reset(self, to: str, code: str) -> bool:
         """Send password reset email via Resend."""
         try:
-            resend.Emails.send({
-                "from": settings.EMAIL_FROM,
-                "to": to,
-                "subject": f"{settings.APP_NAME} 密碼重設",
-                "html": f"""
+            resend.Emails.send(
+                {
+                    "from": settings.EMAIL_FROM,
+                    "to": to,
+                    "subject": f"{settings.APP_NAME} 密碼重設",
+                    "html": f"""
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
                     <h1>密碼重設請求</h1>
                     <p>我們收到您的密碼重設請求。</p>
@@ -63,7 +66,8 @@ class ResendProvider(EmailProvider):
                     </p>
                 </div>
                 """,
-            })
+                }
+            )
             return True
         except Exception:
             return False

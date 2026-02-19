@@ -95,9 +95,7 @@ class PostImage(Base, UUIDMixin, TimestampMixin):
 
 class Like(Base, UUIDMixin, TimestampMixin):
     __tablename__ = "likes"
-    __table_args__ = (
-        UniqueConstraint("post_id", "user_id", name="uq_likes_post_user"),
-    )
+    __table_args__ = (UniqueConstraint("post_id", "user_id", name="uq_likes_post_user"),)
 
     post_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
