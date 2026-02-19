@@ -23,9 +23,9 @@ async def db_session() -> AsyncGenerator[AsyncSession, Any]:
         echo=False,
         poolclass=NullPool,  # Disable connection pooling for tests
     )
-    TestSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async_session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
-    async with TestSessionLocal() as session:
+    async with async_session_factory() as session:
         yield session
         await session.rollback()
 

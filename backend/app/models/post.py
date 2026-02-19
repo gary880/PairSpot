@@ -63,15 +63,15 @@ class Post(Base, UUIDMixin, TimestampMixin, SoftDeleteMixin):
     like_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     # Relationships
-    couple: Mapped["Couple"] = relationship("Couple", back_populates="posts")
-    author: Mapped["User"] = relationship("User", back_populates="posts")
-    images: Mapped[list["PostImage"]] = relationship(
+    couple: Mapped[Couple] = relationship("Couple", back_populates="posts")
+    author: Mapped[User] = relationship("User", back_populates="posts")
+    images: Mapped[list[PostImage]] = relationship(
         "PostImage", back_populates="post", cascade="all, delete-orphan"
     )
-    likes: Mapped[list["Like"]] = relationship(
+    likes: Mapped[list[Like]] = relationship(
         "Like", back_populates="post", cascade="all, delete-orphan"
     )
-    reports: Mapped[list["Report"]] = relationship("Report", back_populates="post")
+    reports: Mapped[list[Report]] = relationship("Report", back_populates="post")
 
 
 class PostImage(Base, UUIDMixin, TimestampMixin):
@@ -90,7 +90,7 @@ class PostImage(Base, UUIDMixin, TimestampMixin):
     height: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Relationships
-    post: Mapped["Post"] = relationship("Post", back_populates="images")
+    post: Mapped[Post] = relationship("Post", back_populates="images")
 
 
 class Like(Base, UUIDMixin, TimestampMixin):
@@ -112,8 +112,8 @@ class Like(Base, UUIDMixin, TimestampMixin):
     )
 
     # Relationships
-    post: Mapped["Post"] = relationship("Post", back_populates="likes")
-    user: Mapped["User"] = relationship("User", back_populates="likes")
+    post: Mapped[Post] = relationship("Post", back_populates="likes")
+    user: Mapped[User] = relationship("User", back_populates="likes")
 
 
 class Report(Base, UUIDMixin, TimestampMixin):
@@ -139,4 +139,4 @@ class Report(Base, UUIDMixin, TimestampMixin):
     )
 
     # Relationships
-    post: Mapped["Post"] = relationship("Post", back_populates="reports")
+    post: Mapped[Post] = relationship("Post", back_populates="reports")

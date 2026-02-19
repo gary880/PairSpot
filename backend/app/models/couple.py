@@ -34,5 +34,5 @@ class Couple(Base, UUIDMixin, TimestampMixin, SoftDeleteMixin):
     )
 
     # Relationships
-    users: Mapped[list["User"]] = relationship("User", back_populates="couple")
-    posts: Mapped[list["Post"]] = relationship("Post", back_populates="couple")
+    users: Mapped[list[User]] = relationship("User", back_populates="couple")
+    posts: Mapped[list[Post]] = relationship("Post", back_populates="couple")

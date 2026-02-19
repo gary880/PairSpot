@@ -5,8 +5,8 @@ import uuid
 
 from PIL import Image
 
-from app.core.storage import get_s3_client
 from app.config import get_settings
+from app.core.storage import get_s3_client
 from app.tasks import celery_app
 
 settings = get_settings()
