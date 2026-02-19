@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pairspot-api
+  labels:
+    app: pairspot-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pairspot-api
+  template:
+    metadata:
+      labels:
+        app: pairspot-api
+    spec:
+      containers:
+        - name: api
+          image: pairspot-api:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: pairspot-secrets
+            - configMapRef:
+                name: pairspot-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pairspot-celery
+  labels:
+    app: pairspot-celery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pairspot-celery
+  template:
+    metadata:
+      labels:
+        app: pairspot-celery
+    spec:
+      containers:
+        - name: celery
+          image: pairspot-api:latest
+          command: ["celery", "-A", "app.tasks", "worker", "-l", "info"]
+          envFrom:
+            - secretRef:
+                name: pairspot-secrets
+            - configMapRef:
+                name: pairspot-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
