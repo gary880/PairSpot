@@ -10,6 +10,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, UUIDMixin
 
+_use_values = lambda obj: [e.value for e in obj]  # noqa: E731
+
 
 class TransactionType(str, enum.Enum):
     PURCHASE = "purchase"  # IAP 购买
@@ -46,7 +48,9 @@ class CoinTransaction(Base, UUIDMixin):
         nullable=False,
         index=True,
     )
-    type: Mapped[TransactionType] = mapped_column(Enum(TransactionType), nullable=False)
+    type: Mapped[TransactionType] = mapped_column(
+        Enum(TransactionType, values_callable=_use_values), nullable=False
+    )
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
     balance_after: Mapped[int] = mapped_column(Integer, nullable=False)
 

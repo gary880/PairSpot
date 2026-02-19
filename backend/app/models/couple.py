@@ -13,6 +13,8 @@ if TYPE_CHECKING:
     from app.models.post import Post
     from app.models.user import User
 
+_use_values = lambda obj: [e.value for e in obj]  # noqa: E731
+
 
 class CoupleStatus(str, enum.Enum):
     PENDING = "pending"  # 等待双方验证
@@ -28,7 +30,7 @@ class Couple(Base, UUIDMixin, TimestampMixin, SoftDeleteMixin):
     anniversary_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     status: Mapped[CoupleStatus] = mapped_column(
-        Enum(CoupleStatus),
+        Enum(CoupleStatus, values_callable=_use_values),
         default=CoupleStatus.PENDING,
         nullable=False,
     )

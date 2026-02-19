@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from app.models.couple import Couple
     from app.models.user import User
 
+_use_values = lambda obj: [e.value for e in obj]  # noqa: E731
+
 
 class PostVisibility(str, enum.Enum):
     PUBLIC = "public"
@@ -50,7 +52,7 @@ class Post(Base, UUIDMixin, TimestampMixin, SoftDeleteMixin):
     )
     content: Mapped[str | None] = mapped_column(Text, nullable=True)
     visibility: Mapped[PostVisibility] = mapped_column(
-        Enum(PostVisibility),
+        Enum(PostVisibility, values_callable=_use_values),
         default=PostVisibility.PUBLIC,
         nullable=False,
     )
@@ -128,10 +130,12 @@ class Report(Base, UUIDMixin, TimestampMixin):
         nullable=False,
         index=True,
     )
-    reason: Mapped[ReportReason] = mapped_column(Enum(ReportReason), nullable=False)
+    reason: Mapped[ReportReason] = mapped_column(
+        Enum(ReportReason, values_callable=_use_values), nullable=False
+    )
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[ReportStatus] = mapped_column(
-        Enum(ReportStatus),
+        Enum(ReportStatus, values_callable=_use_values),
         default=ReportStatus.PENDING,
         nullable=False,
     )

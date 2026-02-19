@@ -1,3 +1,4 @@
+from app.models.auth import RefreshToken
 from app.models.base import Base
 from app.models.couple import Couple
 from app.models.post import Like, Post, PostImage, Report
@@ -8,6 +9,7 @@ __all__ = [
     "Base",
     "Couple",
     "User",
+    "RefreshToken",
     "Post",
     "PostImage",
     "Like",
