@@ -642,15 +642,66 @@ DB 擴充：
 
 ## 12. 開發里程碑建議
 
+> **核心策略：先用熟悉的 Web 前端技能驗證後端 API，再進入 iOS 開發。**
+> 一次只踩一邊的坑——API 出問題用 Web debug，iOS 出問題時 API 已經穩定。
+
+### 第一階段：後端 API + Web 測試介面（Week 1-8）
+
+目標：所有核心 API 完成且經過 Web 端驗證，確保邏輯正確。
+
+| 階段 | 週期 | 內容 | 產出 / 驗收標準 |
+|------|------|------|----------------|
+| **P0 環境建置** | Week 1-2 | Docker Compose（PostgreSQL、Redis、MinIO）、FastAPI 專案骨架、Alembic migration 設定、CI lint + test pipeline、OpenAPI docs 自動生成 | `docker compose up` 一鍵啟動，跑通 health check API |
+| **P1 認證系統** | Week 3-4 | Apple Sign In 後端驗證（JWT decode Apple ID token）、Email OTP 備用驗證、情侶綁定流程（邀請 → 加入）、JWT Access/Refresh Token、Resend 整合（寄邀請通知信）| Web 測試頁可完成：註冊 → 驗證 → 邀請另一半 → 配對成功 |
+| **P2 貼文系統** | Week 5-6 | 貼文 CRUD API、圖片上傳至 MinIO（S3 相容）、Celery 縮圖生成任務、Feed API（分頁 + promoted 排序）、按讚/取消讚 | Web 測試頁可發文（含圖片）、瀏覽 Feed、按讚 |
+| **P3 檔案與帳號** | Week 7-8 | 情侶檔案 API（頭貼、交往日期、在一起天數）、個人帳號 CRUD、帳號注銷（soft delete + 30 天恢復）、檢舉功能 API | Web 測試頁可編輯檔案、上傳頭貼、注銷/恢復帳號 |
+
+Web 測試介面技術選型：
+```
+簡易 React SPA（或純 HTML + fetch）
+├── 不需要漂亮，重點是能跑通所有 API flow
+├── 用途：開發期間的 API 驗證 + debug 工具
+├── 可搭配 FastAPI 內建的 Swagger UI (/docs) 互補
+└── 未來正式 Web 版可以完全重寫，這個只是工具
+```
+
+### 第二階段：iOS App 開發（Week 9-16）
+
+目標：對接已驗證穩定的 API，專注 iOS 原生體驗。
+
+| 階段 | 週期 | 內容 | 產出 / 驗收標準 |
+|------|------|------|----------------|
+| **P4 iOS 基礎建設** | Week 9-10 | Xcode 專案架構（MVVM）、APIClient + AuthInterceptor（Token 自動刷新）、KeychainAccess 儲存 Token、Apple Sign In 串接、邀請配對流程 UI | 可在模擬器上完成註冊 → 配對完整流程 |
+| **P5 核心功能 UI** | Week 11-13 | Feed 瀏覽頁（SwiftUI List + 分頁載入）、發文頁（PhotosPicker + 圖片壓縮上傳）、貼文詳情 + 按讚、情侶檔案頁（頭貼、天數、歷史貼文）、貼文編輯/刪除 | 所有貼文相關 CRUD 可在真機操作 |
+| **P6 付費與帳號** | Week 14-15 | StoreKit 2 內購整合（點數方案）、後端收據驗證 API、推廣貼文功能、帳號設定頁（編輯資料、注銷帳號）| TestFlight 內購測試通過 |
+| **P7 上架準備** | Week 16-18 | App Review 合規檢查清單、隱私權政策 / 使用條款頁面、App Store 截圖 + 描述、TestFlight 外部測試 → 正式送審 | App Store 審核通過上架 |
+
+### 第三階段：正式 Web 版 + 迭代（Week 19+）
+
+目標：App 上線驗證 PMF 後，用強項快速產出 Web 版。
+
 | 階段 | 週期 | 內容 |
 |------|------|------|
-| **Phase 0** | Week 1-2 | 環境建置、Docker Compose、DB schema、CI/CD pipeline |
-| **Phase 1** | Week 3-5 | 註冊/登入流程（含 email 驗證）、JWT 認證 |
-| **Phase 2** | Week 6-8 | 貼文 CRUD、圖片上傳/處理、Feed API |
-| **Phase 3** | Week 9-10 | 情侶檔案、頭貼上傳、在一起天數 |
-| **Phase 4** | Week 11-12 | IAP 整合、點數系統、推廣貼文 |
-| **Phase 5** | Week 13-14 | 帳號注銷、iOS App Review 合規檢查 |
-| **Phase 6** | Week 15-16 | 測試、效能調優、App Store 送審 |
+| **P8 正式 Web 版** | Week 19-22 | React / Next.js 正式 Web App，共用同一套 API，RWD 適配 |
+| **P9 私訊功能** | Week 23-26 | WebSocket 即時通訊、APNs 推播通知 |
+| **P10 持續迭代** | 持續 | 根據用戶反饋調整、限時動態、紀念日提醒等 |
+
+### iOS App Review 合規檢查清單
+
+```
+必做項目（否則會被 reject）：
+☐ 支援 Sign In with Apple（你用 Apple Sign In 註冊，天然滿足）
+☐ 帳號注銷功能（Settings 內 1-2 步到達）
+☐ 注銷後 30 天內可恢復，之後永久刪除
+☐ 隱私權政策連結（App 內 + App Store 頁面）
+☐ 使用條款連結
+☐ 所有虛擬貨幣透過 IAP 購買
+☐ 內購項目說明清楚（點數用途、效果）
+☐ 檢舉/封鎖功能（UGC 類 App 必備）
+☐ 年齡分級正確設定（社交類建議 17+）
+☐ App Transport Security（強制 HTTPS）
+☐ NSPhotoLibraryUsageDescription 等權限說明
+```
 
 ---
 
