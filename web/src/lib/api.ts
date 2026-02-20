@@ -1,4 +1,5 @@
 import type {
+  CoupleProfile,
   FeedResponse,
   LikeResponse,
   LoginRequest,
@@ -9,6 +10,7 @@ import type {
   RegisterInitiateRequest,
   RegisterInitiateResponse,
   RegisterVerifyResponse,
+  UserAccount,
 } from "./types";
 
 const BASE_URL =
@@ -86,6 +88,32 @@ async function authPostMultipart<TRes>(
   return res.json() as Promise<TRes>;
 }
 
+async function authPatch<TRes>(
+  path: string,
+  body?: Record<string, unknown>
+): Promise<TRes> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json() as Promise<TRes>;
+}
+
+async function authPutMultipart<TRes>(
+  path: string,
+  formData: FormData
+): Promise<TRes> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: "PUT",
+    headers: { ...authHeaders() },
+    body: formData,
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json() as Promise<TRes>;
+}
+
 async function authDelete<TRes>(path: string): Promise<TRes> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: "DELETE",
@@ -93,6 +121,14 @@ async function authDelete<TRes>(path: string): Promise<TRes> {
   });
   if (!res.ok) throw new Error(await parseError(res));
   return res.json() as Promise<TRes>;
+}
+
+async function authDeleteNoContent(path: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: "DELETE",
+    headers: { ...authHeaders() },
+  });
+  if (!res.ok) throw new Error(await parseError(res));
 }
 
 // ── Auth API ─────────────────────────────────────────────────────────────────
@@ -144,4 +180,44 @@ export function likePost(postId: string): Promise<LikeResponse> {
 
 export function unlikePost(postId: string): Promise<LikeResponse> {
   return authDelete<LikeResponse>(`/api/v1/posts/${postId}/like`);
+}
+
+// ── Couples API ───────────────────────────────────────────────────────────────
+
+export function getCouple(coupleId: string): Promise<CoupleProfile> {
+  return authGet<CoupleProfile>(`/api/v1/couples/${coupleId}`);
+}
+
+export function updateCouple(
+  coupleId: string,
+  data: { couple_name?: string; anniversary_date?: string }
+): Promise<CoupleProfile> {
+  return authPatch<CoupleProfile>(`/api/v1/couples/${coupleId}`, data as Record<string, unknown>);
+}
+
+export function uploadAvatar(
+  coupleId: string,
+  file: File
+): Promise<CoupleProfile> {
+  const formData = new FormData();
+  formData.append("file", file);
+  return authPutMultipart<CoupleProfile>(`/api/v1/couples/${coupleId}/avatar`, formData);
+}
+
+// ── Account API ───────────────────────────────────────────────────────────────
+
+export function getAccount(): Promise<UserAccount> {
+  return authGet<UserAccount>("/api/v1/account");
+}
+
+export function updateAccount(data: { display_name?: string }): Promise<UserAccount> {
+  return authPatch<UserAccount>("/api/v1/account", data as Record<string, unknown>);
+}
+
+export function deleteAccount(): Promise<void> {
+  return authDeleteNoContent("/api/v1/account");
+}
+
+export function restoreAccount(): Promise<UserAccount> {
+  return authPost<UserAccount>("/api/v1/account/restore");
 }

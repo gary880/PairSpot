@@ -9,6 +9,8 @@ export default function NavBar() {
   const links = [
     { href: "/posts", label: "Feed" },
     { href: "/posts/create", label: "發文" },
+    { href: "/couple", label: "情侶" },
+    { href: "/account", label: "帳號" },
     { href: "/login", label: "登入" },
     { href: "/register", label: "註冊" },
   ];

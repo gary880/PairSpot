@@ -90,3 +90,28 @@ export interface LikeResponse {
   liked: boolean;
   like_count: number;
 }
+
+// ── Couple types ─────────────────────────────────────────────────────────────
+
+export interface CoupleProfile {
+  id: string;
+  couple_name: string;
+  anniversary_date: string | null; // ISO date "YYYY-MM-DD"
+  avatar_url: string | null;
+  status: "pending" | "active" | "suspended" | "single";
+  days_together: number;
+  created_at: string;
+  updated_at: string | null;
+}
+
+// ── Account types ─────────────────────────────────────────────────────────────
+
+export interface UserAccount {
+  id: string;
+  email: string;
+  display_name: string;
+  role: "partner_a" | "partner_b";
+  email_verified: boolean;
+  created_at: string;
+  updated_at: string | null;
+}

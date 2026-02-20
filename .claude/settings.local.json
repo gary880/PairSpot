@@ -5,7 +5,11 @@
       "Bash(pip install:*)",
       "Bash(pip show:*)",
       "Bash(python3:*)",
-      "Bash(pytest:*)"
+      "Bash(pytest:*)",
+      "Bash(ruff format:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(docker compose exec:*)",
+      "Bash(docker compose:*)"
     ]
   }
 }
