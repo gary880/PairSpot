@@ -1,6 +1,9 @@
 import type {
+  FeedResponse,
+  LikeResponse,
   LoginRequest,
   LoginResponse,
+  Post,
   RegisterCompleteRequest,
   RegisterCompleteResponse,
   RegisterInitiateRequest,
@@ -10,6 +13,8 @@ import type {
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+// ── Error parsing ───────────────────────────────────────────────────────────
 
 type FastAPIError = { detail: string | Array<{ msg: string }> };
 
@@ -26,18 +31,71 @@ async function parseError(res: Response): Promise<string> {
   }
 }
 
+// ── Auth token helper ────────────────────────────────────────────────────────
+
+function authHeaders(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  const token = localStorage.getItem("pairspot_access_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+// ── Generic fetch helpers ────────────────────────────────────────────────────
+
 async function post<TReq, TRes>(path: string, body: TReq): Promise<TRes> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    const detail = await parseError(res);
-    throw new Error(detail);
-  }
+  if (!res.ok) throw new Error(await parseError(res));
   return res.json() as Promise<TRes>;
 }
+
+async function authGet<TRes>(path: string): Promise<TRes> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    headers: { ...authHeaders() },
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json() as Promise<TRes>;
+}
+
+async function authPost<TRes>(
+  path: string,
+  body?: Record<string, unknown>
+): Promise<TRes> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json() as Promise<TRes>;
+}
+
+async function authPostMultipart<TRes>(
+  path: string,
+  formData: FormData
+): Promise<TRes> {
+  // No Content-Type header — browser sets multipart/form-data with boundary
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: "POST",
+    headers: { ...authHeaders() },
+    body: formData,
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json() as Promise<TRes>;
+}
+
+async function authDelete<TRes>(path: string): Promise<TRes> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: "DELETE",
+    headers: { ...authHeaders() },
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json() as Promise<TRes>;
+}
+
+// ── Auth API ─────────────────────────────────────────────────────────────────
 
 export function registerInitiate(
   data: RegisterInitiateRequest
@@ -66,4 +124,24 @@ export function registerComplete(
 
 export function login(data: LoginRequest): Promise<LoginResponse> {
   return post<LoginRequest, LoginResponse>("/api/v1/auth/login", data);
+}
+
+// ── Posts API ─────────────────────────────────────────────────────────────────
+
+export function getFeed(offset = 0, limit = 20): Promise<FeedResponse> {
+  return authGet<FeedResponse>(
+    `/api/v1/posts?offset=${offset}&limit=${limit}`
+  );
+}
+
+export function createPost(formData: FormData): Promise<Post> {
+  return authPostMultipart<Post>("/api/v1/posts", formData);
+}
+
+export function likePost(postId: string): Promise<LikeResponse> {
+  return authPost<LikeResponse>(`/api/v1/posts/${postId}/like`);
+}
+
+export function unlikePost(postId: string): Promise<LikeResponse> {
+  return authDelete<LikeResponse>(`/api/v1/posts/${postId}/like`);
 }

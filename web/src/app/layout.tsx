@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import NavBar from "./NavBar";
 
 export const metadata: Metadata = {
   title: "PairSpot",
@@ -14,7 +15,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
-        <main className="mx-auto max-w-md px-4 py-12">{children}</main>
+        <NavBar />
+        <main className="mx-auto max-w-md px-4 py-8">{children}</main>
       </body>
     </html>
   );

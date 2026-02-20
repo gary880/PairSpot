@@ -23,6 +23,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await login(form);
+      localStorage.setItem("pairspot_access_token", res.access_token);
+      localStorage.setItem("pairspot_refresh_token", res.refresh_token);
       setResult(res);
     } catch (err) {
       setError(err instanceof Error ? err.message : "未知錯誤");
@@ -94,6 +96,15 @@ export default function LoginPage() {
             </pre>
           </div>
         </div>
+      )}
+
+      {result && (
+        <button
+          className="btn-primary w-full"
+          onClick={() => router.push("/posts")}
+        >
+          前往 Feed
+        </button>
       )}
 
       <p className="text-center text-sm text-gray-400">

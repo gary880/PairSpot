@@ -1,4 +1,4 @@
-// Mirrors backend/app/schemas/auth.py
+// Mirrors backend/app/schemas/auth.py + schemas/post.py
 
 export interface RegisterInitiateRequest {
   email_a: string;
@@ -44,4 +44,49 @@ export interface LoginResponse {
   access_token: string;
   refresh_token: string;
   token_type: string;
+}
+
+// ── Post types ──────────────────────────────────────────────────────────────
+
+export interface PostImage {
+  id: string;
+  image_url: string;
+  thumbnail_url: string | null;
+  sort_order: number;
+  width: number | null;
+  height: number | null;
+}
+
+export interface PostAuthor {
+  id: string;
+  display_name: string;
+  role: string;
+}
+
+export interface Post {
+  id: string;
+  couple_id: string;
+  author_id: string;
+  author: PostAuthor;
+  content: string | null;
+  visibility: "public" | "private";
+  is_promoted: boolean;
+  promoted_until: string | null;
+  like_count: number;
+  liked_by_me: boolean;
+  images: PostImage[];
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface FeedResponse {
+  items: Post[];
+  total: number;
+  offset: number;
+  limit: number;
+}
+
+export interface LikeResponse {
+  liked: boolean;
+  like_count: number;
 }
