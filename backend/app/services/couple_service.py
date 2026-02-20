@@ -53,7 +53,7 @@ class CoupleService:
         if couple.avatar_url:
             prefix = f"{settings.S3_ENDPOINT_URL}/{settings.S3_BUCKET_NAME}/"
             if couple.avatar_url.startswith(prefix):
-                old_key = couple.avatar_url[len(prefix):]
+                old_key = couple.avatar_url[len(prefix) :]
                 with contextlib.suppress(Exception):
                     await delete_file(old_key)
 
