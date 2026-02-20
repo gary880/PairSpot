@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import contextlib
 import uuid
-from datetime import date, datetime, timezone
+from datetime import date
 
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import select
@@ -53,10 +54,8 @@ class CoupleService:
             prefix = f"{settings.S3_ENDPOINT_URL}/{settings.S3_BUCKET_NAME}/"
             if couple.avatar_url.startswith(prefix):
                 old_key = couple.avatar_url[len(prefix):]
-                try:
+                with contextlib.suppress(Exception):
                     await delete_file(old_key)
-                except Exception:
-                    pass  # Don't fail upload if old file deletion fails
 
         data = await file.read()
         content_type = file.content_type or "image/jpeg"
