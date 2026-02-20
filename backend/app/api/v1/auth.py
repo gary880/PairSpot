@@ -23,12 +23,18 @@ from app.schemas.auth import (
 )
 from app.services.auth_service import AuthService
 from app.services.email.base import EmailProvider
+from app.services.email.console_provider import ConsoleEmailProvider
 from app.services.email.resend_provider import ResendProvider
 
 router = APIRouter()
 
 
 def get_email_provider() -> EmailProvider:
+    from app.config import get_settings
+
+    settings = get_settings()
+    if settings.ENV == "development":
+        return ConsoleEmailProvider()
     return ResendProvider()
 
 
